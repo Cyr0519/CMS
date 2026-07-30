@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StatutArticle {
+  BROUILLON
+  EN_ATTENTE
+  PUBLIE
+  REFUSE
+  ARCHIVE
+
+  @@map("statut_article")
+}
+
+enum StatutCommentaire {
+  ACTIF
+  SUPPRIME
+
+  @@map("statut_commentaire")
+}
+
+model Role {
+  id      Int    @id @default(autoincrement())
+  nomRole String @unique @map("nom_role")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  roleId    Int      @map("role_id")
+  nom       String
+  prenom    String
+  email     String   @unique
+  password  String
+  photo     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  role        Role         @relation(fields: [roleId], references: [id])
+  articles    Article[]
+  editorNotes EditorNote[]
+
+  @@map("users")
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  nom         String  @unique
+  description String?
+
+  articles Article[]
+
+  @@map("categories")
+}
+
+model Article {
+  id          Int           @id @default(autoincrement())
+  userId      Int           @map("user_id")
+  categoryId  Int           @map("category_id")
+  titre       String
+  slug        String        @unique
+  resume      String?
+  contenu     String
+  statut      StatutArticle @default(BROUILLON)
+  publishedAt DateTime?     @map("published_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id])
+  category    Category     @relation(fields: [categoryId], references: [id])
+  images      Image[]
+  comments    Comment[]
+  editorNotes EditorNote[]
+
+  @@map("articles")
+}
+
+model Image {
+  id              Int      @id @default(autoincrement())
+  articleId       Int      @map("article_id")
+  nomFichier      String   @map("nom_fichier")
+  chemin          String
+  taille          Int
+  imageCouverture Boolean  @default(false) @map("image_couverture")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("images")
+}
+
+model Comment {
+  id        Int               @id @default(autoincrement())
+  articleId Int               @map("article_id")
+  nomAuteur String            @map("nom_auteur")
+  email     String
+  contenu   String
+  statut    StatutCommentaire @default(ACTIF)
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model EditorNote {
+  id        Int      @id @default(autoincrement())
+  articleId Int      @map("article_id")
+  userId    Int      @map("user_id")
+  contenu   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("editor_notes")
+}

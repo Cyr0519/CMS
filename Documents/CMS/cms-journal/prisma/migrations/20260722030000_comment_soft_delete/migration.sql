@@ -1,0 +1,1 @@
+ALTER TYPE "statut_commentaire" RENAME VALUE 'MASQUE' TO 'SUPPRIME';
