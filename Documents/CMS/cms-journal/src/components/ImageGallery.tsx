@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import ErrorState from "@/components/ui/ErrorState";
+import IconButton from "@/components/ui/IconButton";
+
 export type GalleryImage = { id: number; nomFichier: string; chemin: string; imageCouverture: boolean };
 type Props = { images: GalleryImage[]; canManage: boolean; onChange: () => void };
 
@@ -25,6 +28,43 @@ export default function ImageGallery({ images, canManage, onChange }: Props) {
     }
   }
 
-  if (images.length === 0) return <p className="text-sm text-slate-500">Aucune image.</p>;
-  return <div><div className="grid grid-cols-2 gap-4 sm:grid-cols-3">{images.map((image) => <div key={image.id} className="overflow-hidden rounded-lg border border-slate-200"><div className="relative aspect-video bg-slate-100"><Image src={image.chemin} alt={image.nomFichier} fill className="object-cover" />{image.imageCouverture && <span className="absolute left-2 top-2 rounded-full bg-indigo-600 px-2 py-1 text-xs font-semibold text-white">Couverture</span>}</div>{canManage && <div className="flex flex-wrap gap-2 p-2">{!image.imageCouverture && <button type="button" disabled={busyId === image.id} onClick={() => void action(image.id, "PATCH")} className="text-xs font-medium text-indigo-600 disabled:opacity-50">Définir couverture</button>}<button type="button" disabled={busyId === image.id} onClick={() => void action(image.id, "DELETE")} className="ml-auto text-xs font-medium text-red-600 disabled:opacity-50">Supprimer</button></div>}</div>)}</div>{error && <p className="mt-2 text-sm text-red-600">{error}</p>}</div>;
+  if (images.length === 0) return <p className="text-body-sm text-ink-muted">Aucune image.</p>;
+
+  return (
+    <div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {images.map((image) => (
+          <figure key={image.id} className={`overflow-hidden rounded-xl border bg-surface ${image.imageCouverture ? "border-brand" : "border-line"}`}>
+            <div className="relative aspect-video bg-gray-100">
+              <Image src={image.chemin} alt={image.nomFichier} fill sizes="200px" className="object-cover" />
+              {image.imageCouverture && (
+                <span className="absolute left-2 top-2 rounded-full bg-brand px-2 py-0.5 text-caption font-medium text-white">Couverture</span>
+              )}
+            </div>
+            {canManage && (
+              <figcaption className="flex items-center gap-1 p-2">
+                <button
+                  type="button"
+                  disabled={image.imageCouverture || busyId === image.id}
+                  onClick={() => void action(image.id, "PATCH")}
+                  className="min-w-0 flex-1 truncate rounded-full px-2 py-1 text-left text-caption font-medium text-ink-soft hover:bg-gray-100 disabled:opacity-40"
+                >
+                  {image.imageCouverture ? image.nomFichier : "Définir comme couverture"}
+                </button>
+                <IconButton
+                  icon="trash"
+                  label={`Supprimer ${image.nomFichier}`}
+                  size="sm"
+                  variant="destructive"
+                  disabled={busyId === image.id}
+                  onClick={() => void action(image.id, "DELETE")}
+                />
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+      {error && <div className="mt-3"><ErrorState compact message={error} /></div>}
+    </div>
+  );
 }

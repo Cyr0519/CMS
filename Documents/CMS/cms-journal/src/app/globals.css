@@ -1,65 +1,202 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f5f5f7;
-  --foreground: #1a1a2e;
-  --primary: #1a1a2e;
-  --secondary: #16213e;
-  --accent: #e94560;
-  --muted: #6b7280;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+/* =========================================================================
+   DESIGN TOKENS — Grace Info CMS
+   Direction artistique : vert forêt / crème / sauge, formes en pilule,
+   surfaces flottantes, ombres quasi nulles. Une seule source de vérité.
+   ========================================================================= */
+
+@theme {
+  /* --- Neutres chauds (remplacent la rampe gray froide de Tailwind) ------ */
+  --color-gray-50: #f7f7f2;
+  --color-gray-100: #efefe6;
+  --color-gray-200: #e4e5d9;
+  --color-gray-300: #cdd0c1;
+  --color-gray-400: #a4a999;
+  --color-gray-500: #7d8375;
+  --color-gray-600: #5c6458;
+  --color-gray-700: #434b41;
+  --color-gray-800: #2c332b;
+  --color-gray-900: #1b211b;
+
+  /* --- Surfaces --------------------------------------------------------- */
+  --color-canvas: #f4f4ec;        /* fond de page */
+  --color-surface: #ffffff;       /* surface standard */
+  --color-surface-soft: #edf1e3;  /* surface teintée (bandes, zones calmes) */
+  --color-surface-sunken: #f7f7f2;/* champs, zones en creux */
+  --color-surface-dark: #17301f;  /* sidebar, blocs inversés */
+  --color-surface-dark-soft: #1f3d29;
+
+  /* --- Lignes ----------------------------------------------------------- */
+  --color-line: #e5e6da;
+  --color-line-strong: #d3d6c6;
+
+  /* --- Texte ------------------------------------------------------------ */
+  --color-ink: #1b211b;
+  --color-ink-soft: #5c6458;
+  --color-ink-muted: #858c7e;
+  --color-ink-inverse: #f4f4ec;
+
+  /* --- Marque ----------------------------------------------------------- */
+  --color-brand: #2f6b33;
+  --color-brand-hover: #265728;
+  --color-brand-soft: #e6f0dc;
+  --color-brand-ink: #24512a;
+
+  /* --- Sémantique ------------------------------------------------------- */
+  --color-success: #1f7a4d;
+  --color-success-soft: #ddf0e5;
+  --color-warning: #a86c14;
+  --color-warning-soft: #f7ecd6;
+  --color-error: #b0402f;
+  --color-error-soft: #f7e2dd;
+  --color-info: #3c6182;
+  --color-info-soft: #e0eaf2;
+
+  /* Le rouge du « j'aime » : distinct du rouge d'erreur, qui garde son sens. */
+  --color-like: #d33a4b;
+  --color-like-soft: #fbe7e9;
+
+  /* --- Alias de compatibilité (anciennes classes du projet) -------------- */
+  --color-primary: #1b211b;
+  --color-secondary: #2c332b;
+  --color-accent: #2f6b33;
+  --color-muted: #858c7e;
+  --color-danger: #b0402f;
+  --color-background: #f4f4ec;
+  --color-foreground: #1b211b;
+
+  /* --- Rayons ----------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+  --radius-3xl: 24px;
+
+  /* --- Ombres (très légères, jamais décoratives) ------------------------ */
+  --shadow-2xs: 0 1px 2px rgba(27, 33, 27, .04);
+  --shadow-xs: 0 1px 2px rgba(27, 33, 27, .05);
+  --shadow-sm: 0 1px 3px rgba(27, 33, 27, .05);
+  --shadow-md: 0 4px 16px -6px rgba(27, 33, 27, .12);
+  --shadow-lg: 0 12px 32px -12px rgba(27, 33, 27, .18);
+  --shadow-xl: 0 24px 56px -20px rgba(27, 33, 27, .24);
+
+  /* --- Typographie ------------------------------------------------------ */
+  --text-caption: .6875rem;   /* 11px — métadonnées */
+  --text-caption--line-height: 1rem;
+  --text-label: .75rem;       /* 12px — labels, badges */
+  --text-label--line-height: 1.125rem;
+  --text-body-sm: .8125rem;   /* 13px — texte dense (tableaux) */
+  --text-body-sm--line-height: 1.25rem;
+  --text-body: .875rem;       /* 14px — corps par défaut */
+  --text-body--line-height: 1.375rem;
+  --text-h3: 1rem;            /* 16px — titre de bloc */
+  --text-h3--line-height: 1.5rem;
+  --text-h2: 1.1875rem;       /* 19px — titre de section */
+  --text-h2--line-height: 1.625rem;
+  --text-h1: 1.5rem;          /* 24px — titre de page */
+  --text-h1--line-height: 2rem;
+  --text-display: 2rem;       /* 32px — chiffres clés */
+  --text-display--line-height: 2.25rem;
+
+  /* --- Transitions ------------------------------------------------------ */
+  --ease-out-soft: cubic-bezier(.22, 1, .36, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
-  --color-accent: var(--accent);
-  --color-muted: var(--muted);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-danger: var(--danger);
+  --font-display: var(--font-jakarta);
 }
+
+/* =========================================================================
+   BASE
+   ========================================================================= */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), Arial, sans-serif;
-  font-weight: 400;
-  line-height: 1.625;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  -webkit-font-smoothing: antialiased;
 }
 
-button,
-a,
-input,
-select,
-textarea {
-  transition-duration: 200ms;
-  transition-timing-function: ease-out;
+h1, h2, h3, h4 {
+  font-family: var(--font-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
+  letter-spacing: -.015em;
 }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--accent);
+/* Chiffres alignés et tabulaires : indispensable pour les KPI et les tableaux. */
+.tabular, table, .stat-value {
+  font-variant-numeric: tabular-nums;
+}
+
+button, a, input, select, textarea, summary {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
-@keyframes toast-in {
-  from { opacity: 0; transform: translateX(24px); }
-  to { opacity: 1; transform: translateX(0); }
+/* Les conteneurs qui reçoivent le focus par programme (panneau de modale)
+   ne doivent pas afficher l'anneau destiné à la navigation au clavier. */
+[tabindex="-1"]:focus-visible {
+  outline: none;
 }
 
-@keyframes modal-in {
-  from { opacity: 0; transform: scale(.95); }
-  to { opacity: 1; transform: scale(1); }
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-brand-ink);
 }
 
-.animate-toast-in { animation: toast-in .2s ease-out; }
-.animate-modal-in { animation: modal-in .2s ease-out; }
+/* Barres de défilement discrètes, dans la teinte du système. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+/* =========================================================================
+   ANIMATIONS — courtes, discrètes, jamais permanentes
+   ========================================================================= */
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.animate-toast-in { animation: toast-in .22s var(--ease-out-soft); }
+.animate-modal-in { animation: modal-in .18s var(--ease-out-soft); }
+.animate-overlay-in { animation: overlay-in .18s ease-out; }
+.animate-pop-in { animation: pop-in .14s var(--ease-out-soft); }
+.animate-grow-x { animation: grow-x .5s var(--ease-out-soft); transform-origin: left; }
+
+/* Skeleton : balayage lumineux plutôt qu'un pulse qui clignote. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-gray-100);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .65), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

@@ -40,7 +40,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ],
   };
 
-  const [articles, total, categories] = await prisma.$transaction([
+  // Lectures seules : Promise.all suffit, pas de transaction à acquérir.
+  const [articles, total, categories] = await Promise.all([
     prisma.article.findMany({
       where,
       include: {

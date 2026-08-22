@@ -5,12 +5,18 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import LikeButton from "@/components/LikeButton";
 import type { PublicArticle } from "@/components/PublicArticleCard";
+import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
+import ButtonLink from "@/components/ui/ButtonLink";
+import EmptyState from "@/components/ui/EmptyState";
+import ErrorState from "@/components/ui/ErrorState";
+import Icon from "@/components/ui/Icon";
 import Input from "@/components/ui/Input";
 import Skeleton from "@/components/ui/Skeleton";
+import Textarea from "@/components/ui/Textarea";
 import Toast from "@/components/ui/Toast";
 
 type Comment = { id: number; nomAuteur: string; contenu: string; createdAt: string };
@@ -58,17 +64,109 @@ export default function PublicArticlePage() {
     finally { setSubmitting(false); }
   }
 
-  if (loading) return <div className="mx-auto max-w-5xl space-y-6 px-4 py-12"><Skeleton className="h-12 w-3/4" /><Skeleton className="h-[400px]" /><Skeleton className="h-72" /></div>;
-  if (!article) return <div className="mx-auto max-w-3xl px-4 py-20 text-center"><p className="rounded-xl bg-red-50 p-4 text-danger">{error || "Article introuvable"}</p><Link href="/articles" className="mt-6 inline-block font-medium text-accent hover:underline">Retour aux articles</Link></div>;
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 px-4 py-12 sm:px-6">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-11 w-3/4" />
+        <Skeleton className="h-[320px] rounded-3xl" />
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-20">
+        <ErrorState title="Article introuvable" message={error || "Cet article n’existe pas ou n’est plus publié."} onRetry={() => void load()} />
+        <div className="mt-6 flex justify-center">
+          <ButtonLink href="/articles" variant="secondary" icon="arrowLeft">Tous les articles</ButtonLink>
+        </div>
+      </div>
+    );
+  }
 
   const cover = article.images.find((image) => image.imageCouverture) || article.images[0];
-  return <article className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-    <Link href="/articles" className="text-sm font-medium text-accent hover:underline">← Tous les articles</Link>
-    <div className="mt-6 flex flex-wrap items-center gap-3"><Badge variant="info">{article.category.nom}</Badge><span className="text-sm text-gray-500">{article.author.prenom} {article.author.nom}</span><span className="text-gray-300">·</span><time className="text-sm text-gray-500">{new Date(article.publishedAt || article.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</time></div>
-    <h1 className="mt-4 text-3xl font-bold tracking-tight text-primary sm:text-5xl">{article.titre}</h1>
-    {cover && <div className="relative mt-8 h-[260px] w-full overflow-hidden rounded-xl shadow-md sm:h-[400px]"><Image src={cover.chemin} alt={cover.nomFichier || article.titre} fill priority className="object-cover" /></div>}
-    <Card className="mt-8 hover:translate-y-0"><p className="border-l-4 border-accent py-2 pl-4 text-lg italic leading-relaxed text-gray-600">{article.resume}</p><div className="mt-8 whitespace-pre-wrap text-base leading-8 text-gray-800">{article.contenu}</div></Card>
-    <section className="mt-10"><div className="mb-5 flex items-center gap-3"><h2 className="text-2xl font-semibold tracking-tight text-primary">Commentaires</h2><Badge variant="info">{article.comments.length}</Badge></div><Card className="hover:translate-y-0"><h3 className="mb-5 text-lg font-semibold">Laisser un commentaire</h3><form onSubmit={(event) => void submitComment(event)} className="space-y-4"><div className="grid gap-4 sm:grid-cols-2"><Input label="Nom *" value={nom} onChange={(event) => setNom(event.target.value)} required minLength={2} /><Input label="Email (optionnel)" type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></div><label className="block text-sm font-medium text-primary">Commentaire *<textarea value={contenu} onChange={(event) => setContenu(event.target.value)} required maxLength={2000} rows={5} className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" /></label>{error && <p className="text-sm text-danger">{error}</p>}<Button type="submit" loading={submitting}>Publier le commentaire</Button></form></Card><div className="mt-6 space-y-4">{article.comments.map((comment) => <Card key={comment.id} className="p-5 hover:translate-y-0"><div className="flex items-center justify-between gap-4"><p className="font-semibold text-primary">{comment.nomAuteur}</p><time className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString("fr-FR")}</time></div><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-gray-600">{comment.contenu}</p></Card>)}{article.comments.length === 0 && <p className="rounded-xl bg-white p-6 text-center text-sm text-gray-500">Soyez le premier à commenter cet article.</p>}</div></section>
-    {toast && <Toast message={toast} onClose={() => setToast("")} />}
-  </article>;
+
+  return (
+    <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link href="/articles" className="inline-flex items-center gap-1.5 text-body-sm font-medium text-ink-muted hover:text-ink">
+        <Icon name="arrowLeft" size={13} />
+        Tous les articles
+      </Link>
+
+      <header className="mt-6">
+        <Badge variant="brand">{article.category.nom}</Badge>
+        <h1 className="mt-4 font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-ink sm:text-[2.5rem]">
+          {article.titre}
+        </h1>
+        <div className="mt-5 flex flex-wrap items-center gap-2.5 text-body-sm text-ink-muted">
+          <Avatar nom={article.author.nom} prenom={article.author.prenom} size={32} />
+          <span className="font-medium text-ink-soft">{article.author.prenom} {article.author.nom}</span>
+          <span aria-hidden="true">·</span>
+          <time>{new Date(article.publishedAt || article.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</time>
+        </div>
+      </header>
+
+      {cover && (
+        <div className="relative mt-8 h-[240px] w-full overflow-hidden rounded-3xl bg-gray-100 sm:h-[400px]">
+          <Image src={cover.chemin} alt={cover.nomFichier || article.titre} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />
+        </div>
+      )}
+
+      {article.resume && (
+        <p className="mt-8 border-l-2 border-brand pl-5 text-h2 leading-relaxed text-ink-soft">{article.resume}</p>
+      )}
+
+      <div className="mt-8 whitespace-pre-wrap text-[.9375rem] leading-8 text-ink-soft">{article.contenu}</div>
+
+      <div className="mt-8 flex items-center gap-3 border-t border-line pt-6">
+        <LikeButton slug={article.slug} initialLikes={article.likes ?? 0} />
+        <span className="text-body-sm text-ink-muted">Cet article vous a plu ?</span>
+      </div>
+
+      <section className="mt-12 border-t border-line pt-10">
+        <h2 className="flex items-center gap-2 font-display text-h1 font-semibold tracking-tight text-ink">
+          Commentaires
+          <span className="tabular rounded-full bg-gray-100 px-2.5 py-1 text-label font-medium text-ink-soft">{article.comments.length}</span>
+        </h2>
+
+        <form onSubmit={(event) => void submitComment(event)} className="mt-6 rounded-3xl border border-line bg-surface p-5 sm:p-6">
+          <h3 className="text-h3 font-semibold text-ink">Laisser un commentaire</h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Input label="Nom" required minLength={2} value={nom} onChange={(event) => setNom(event.target.value)} />
+            <Input label="Email" type="email" hint="Facultatif, jamais publié." value={email} onChange={(event) => setEmail(event.target.value)} />
+          </div>
+          <div className="mt-4">
+            <Textarea label="Commentaire" required rows={4} maxLength={2000} counter value={contenu} onChange={(event) => setContenu(event.target.value)} />
+          </div>
+          {error && <p className="mt-3 text-body-sm text-error">{error}</p>}
+          <div className="mt-4 flex justify-end">
+            <Button type="submit" icon="send" loading={submitting}>Publier</Button>
+          </div>
+        </form>
+
+        {article.comments.length === 0 ? (
+          <EmptyState compact icon="comment" title="Aucun commentaire" description="Soyez le premier à réagir à cet article." />
+        ) : (
+          <ul className="mt-6 space-y-3">
+            {article.comments.map((comment) => (
+              <li key={comment.id} className="flex gap-3 rounded-2xl border border-line bg-surface p-4">
+                <Avatar nom={comment.nomAuteur} size={34} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="font-medium text-ink">{comment.nomAuteur}</p>
+                    <time className="text-caption text-ink-muted">{new Date(comment.createdAt).toLocaleDateString("fr-FR")}</time>
+                  </div>
+                  <p className="mt-1.5 whitespace-pre-wrap text-body leading-relaxed text-ink-soft">{comment.contenu}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {toast && <Toast message={toast} onClose={() => setToast("")} />}
+    </article>
+  );
 }

@@ -33,9 +33,23 @@ export const articleListSchema = z.object({
 });
 
 export const statusInputSchema = z.object({
-  statut: z.enum(["PUBLIE", "REFUSE"]),
+  statut: z.enum(["PUBLIE", "REFUSE", "EN_ATTENTE"]),
   note: z.string().trim().max(1000).optional(),
 });
+
+/**
+ * Transitions autorisées à un éditeur ou à un administrateur.
+ * Un article publié redevient « en attente » : il quitte le site public sans
+ * sortir du circuit éditorial, et peut être republié sans repasser par l'auteur.
+ */
+export const REVIEW_TRANSITIONS: Record<string, readonly string[]> = {
+  EN_ATTENTE: ["PUBLIE", "REFUSE"],
+  PUBLIE: ["EN_ATTENTE"],
+};
+
+export function canReviewTransition(from: string, to: string): boolean {
+  return (REVIEW_TRANSITIONS[from] ?? []).includes(to);
+}
 
 export type AppRole = "administrateur" | "editeur" | "journaliste";
 

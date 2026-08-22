@@ -14,6 +14,7 @@ export async function GET(_request: Request, context: Context): Promise<NextResp
       slug: true,
       resume: true,
       contenu: true,
+      likes: true,
       publishedAt: true,
       createdAt: true,
       images: {

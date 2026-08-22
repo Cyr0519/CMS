@@ -21,7 +21,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
   const { page, limit, statut } = parsed.data;
   const where = statut ? { statut } : {};
-  const [comments, total] = await prisma.$transaction([
+  // Lectures seules : Promise.all suffit, pas de transaction à acquérir.
+  const [comments, total] = await Promise.all([
     prisma.comment.findMany({
       where,
       include: { article: { select: { id: true, titre: true, slug: true } } },

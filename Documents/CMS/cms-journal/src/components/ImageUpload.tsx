@@ -4,6 +4,9 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Button from "@/components/ui/Button";
+import ErrorState from "@/components/ui/ErrorState";
+import Icon from "@/components/ui/Icon";
+import IconButton from "@/components/ui/IconButton";
 
 type Props = {
   articleId?: number;
@@ -46,13 +49,72 @@ export default function ImageUpload({ articleId, onUploaded, onSelectionChange }
     finally { setUploading(false); }
   }
 
-  return <div>
-    <div onDragEnter={(event) => { event.preventDefault(); setDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); selectFiles(Array.from(event.dataTransfer.files)); }} className={`rounded-xl border-2 border-dashed p-8 text-center transition ${dragging ? "border-accent bg-red-50" : "border-gray-300 hover:border-accent"}`}>
-      <input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(event) => selectFiles(Array.from(event.target.files || []))} className="sr-only" />
-      <span className="text-4xl" aria-hidden="true">🖼️</span><p className="mt-3 font-medium text-primary">Déposez vos images ou cliquez pour parcourir</p><p className="mt-1 text-sm text-gray-500">JPG, PNG ou WebP · 5 Mo maximum</p><Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => inputRef.current?.click()}>Parcourir</Button>
+  return (
+    <div>
+      <div
+        onDragEnter={(event) => { event.preventDefault(); setDragging(true); }}
+        onDragOver={(event) => event.preventDefault()}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(event) => { event.preventDefault(); setDragging(false); selectFiles(Array.from(event.dataTransfer.files)); }}
+        className={`flex flex-col items-center rounded-2xl border border-dashed px-6 py-8 text-center transition ${dragging ? "border-brand bg-brand-soft" : "border-line-strong bg-surface-sunken"}`}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => selectFiles(Array.from(event.target.files || []))}
+          className="sr-only"
+        />
+        <span className="flex size-10 items-center justify-center rounded-full bg-surface text-ink-muted">
+          <Icon name="upload" size={18} />
+        </span>
+        <p className="mt-3 text-body font-medium text-ink">Déposez vos images ici</p>
+        <p className="mt-1 text-caption text-ink-muted">JPG, PNG ou WebP · 5 Mo maximum par fichier</p>
+        <Button type="button" variant="secondary" size="sm" className="mt-4" onClick={() => inputRef.current?.click()}>Parcourir</Button>
+      </div>
+
+      {error && <div className="mt-3"><ErrorState compact message={error} /></div>}
+
+      {previews.length > 0 && (
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {previews.map((preview, index) => (
+            <figure key={`${preview.file.name}-${index}`} className={`overflow-hidden rounded-xl border bg-surface ${coverIndex === index ? "border-brand" : "border-line"}`}>
+              <div className="relative aspect-video bg-gray-100">
+                <Image src={preview.url} alt={preview.file.name} fill unoptimized sizes="200px" className="object-cover" />
+                {coverIndex === index && (
+                  <span className="absolute left-2 top-2 rounded-full bg-brand px-2 py-0.5 text-caption font-medium text-white">Couverture</span>
+                )}
+              </div>
+              <figcaption className="flex items-center gap-1 p-2">
+                <button
+                  type="button"
+                  onClick={() => setCoverIndex(index)}
+                  disabled={coverIndex === index}
+                  className="min-w-0 flex-1 truncate rounded-full px-2 py-1 text-left text-caption font-medium text-ink-soft hover:bg-gray-100 disabled:opacity-40"
+                >
+                  {coverIndex === index ? preview.file.name : "Définir comme couverture"}
+                </button>
+                <IconButton
+                  icon="close"
+                  label={`Retirer ${preview.file.name}`}
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))}
+                />
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+
+      {articleId && files.length > 0 && (
+        <div className="mt-4 flex justify-end">
+          <Button type="button" icon="upload" loading={uploading} onClick={() => void upload()}>
+            Ajouter {files.length} image{files.length > 1 ? "s" : ""}
+          </Button>
+        </div>
+      )}
     </div>
-    {error && <p className="mt-2 text-sm text-danger">{error}</p>}
-    {previews.length > 0 && <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">{previews.map((preview, index) => <div key={`${preview.file.name}-${index}`} className={`overflow-hidden rounded-xl border-2 bg-white ${coverIndex === index ? "border-accent" : "border-transparent"}`}><div className="relative aspect-video"><Image src={preview.url} alt={preview.file.name} fill unoptimized className="object-cover" />{coverIndex === index && <span className="absolute left-2 top-2 rounded-full bg-accent px-2 py-1 text-[10px] font-semibold text-white">Couverture</span>}</div><div className="flex items-center gap-2 p-2"><button type="button" onClick={() => setCoverIndex(index)} className="min-w-0 flex-1 truncate text-left text-xs font-medium text-primary">Définir comme couverture</button><button type="button" aria-label={`Supprimer ${preview.file.name}`} onClick={() => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))} className="text-danger">×</button></div></div>)}</div>}
-    {articleId && files.length > 0 && <div className="mt-4 flex justify-end"><Button type="button" loading={uploading} onClick={() => void upload()}>Ajouter les images</Button></div>}
-  </div>;
+  );
 }

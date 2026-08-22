@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import {
+  canReviewTransition,
   getCurrentUser,
   parseArticleId,
   statusInputSchema,
@@ -31,21 +32,27 @@ export async function PATCH(request: NextRequest, context: Context): Promise<Nex
 
   const article = await prisma.article.findUnique({ where: { id } });
   if (!article) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
-  if (article.statut !== "EN_ATTENTE") {
-    return NextResponse.json({ error: "Seul un article en attente peut être traité" }, { status: 409 });
-  }
 
   const { statut, note } = parsed.data;
+  if (!canReviewTransition(article.statut, statut)) {
+    return NextResponse.json(
+      { error: "Un article en attente peut être publié ou refusé, un article publié peut être dépublié" },
+      { status: 409 }
+    );
+  }
+
   const updated = await prisma.$transaction(async (tx) => {
     const result = await tx.article.update({
       where: { id },
       data: {
         statut,
-        publishedAt: statut === "PUBLIE" ? new Date() : null,
+        // La première date de publication est conservée : une dépublication
+        // suivie d'une republication ne réécrit pas l'historique de l'article.
+        publishedAt: statut === "PUBLIE" ? article.publishedAt ?? new Date() : article.publishedAt,
       },
     });
 
-    if (statut === "REFUSE" && note) {
+    if (note && (statut === "REFUSE" || statut === "EN_ATTENTE")) {
       await tx.editorNote.create({ data: { articleId: id, userId: user.id, contenu: note } });
     }
 

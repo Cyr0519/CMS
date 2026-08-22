@@ -21,7 +21,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const limit = 5;
 
   const [draftCount, pendingCount, publishedCount, refusedCount, totalComments, totalUsers, journalistCount, latestArticles, latestArticlesTotal, pendingArticles, latestComments] =
-    await prisma.$transaction([
+    // Lectures seules : Promise.all suffit, pas de transaction à acquérir.
+    await Promise.all([
       prisma.article.count({ where: { AND: [articleScope, { statut: "BROUILLON" }] } }),
       prisma.article.count({ where: { AND: [articleScope, { statut: "EN_ATTENTE" }] } }),
       prisma.article.count({ where: { AND: [articleScope, { statut: "PUBLIE" }] } }),

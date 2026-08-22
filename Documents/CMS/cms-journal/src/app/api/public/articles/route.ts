@@ -17,7 +17,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { page, limit } = parsed.data;
   const where = { statut: "PUBLIE" as const };
-  const [articles, total] = await prisma.$transaction([
+  // Lectures seules : exécutées en parallèle, sans transaction interactive.
+  // Le pool n'a plus à réserver une connexion dédiée (erreurs P2028 en production).
+  const [articles, total] = await Promise.all([
     prisma.article.findMany({
       where,
       select: {

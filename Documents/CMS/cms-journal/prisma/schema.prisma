@@ -76,6 +76,7 @@ model Article {
   resume      String?
   contenu     String
   statut      StatutArticle @default(BROUILLON)
+  likes       Int           @default(0)
   publishedAt DateTime?     @map("published_at")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")

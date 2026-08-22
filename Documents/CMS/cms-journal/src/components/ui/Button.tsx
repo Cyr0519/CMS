@@ -2,24 +2,28 @@
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "outline" | "danger" | "ghost";
-type Size = "sm" | "md" | "lg";
+import { buttonClasses, type ButtonSize, type ButtonVariant } from "@/components/ui/button-styles";
+import Icon, { type IconName } from "@/components/ui/Icon";
+
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: Variant;
-  size?: Size;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
-  children: ReactNode;
+  icon?: IconName;
+  iconRight?: IconName;
+  fullWidth?: boolean;
+  children?: ReactNode;
 };
 
-const variants: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:bg-[#d63852]",
-  secondary: "bg-primary text-white hover:bg-secondary",
-  outline: "border border-gray-300 bg-white text-primary hover:bg-gray-50",
-  danger: "bg-danger text-white hover:bg-red-600",
-  ghost: "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-primary",
-};
-const sizes: Record<Size, string> = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-sm", lg: "px-5 py-3 text-base" };
-
-export default function Button({ variant = "primary", size = "md", loading = false, disabled, className = "", children, ...props }: Props) {
-  return <button disabled={disabled || loading} className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition duration-200 ease-out active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`} {...props}>{loading && <span className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden="true" />}<span>{children}</span></button>;
+/** Système de boutons : 5 intentions, 3 tailles, forme en pilule. */
+export default function Button({ variant = "primary", size = "md", loading = false, icon, iconRight, fullWidth = false, disabled, className = "", children, ...props }: Props) {
+  return (
+    <button disabled={disabled || loading} className={`${buttonClasses(variant, size, fullWidth)} ${className}`} {...props}>
+      {loading
+        ? <span className="size-3.5 animate-spin rounded-full border-[1.5px] border-current border-r-transparent" aria-hidden="true" />
+        : icon && <Icon name={icon} size={size === "sm" ? 14 : 16} />}
+      {children}
+      {iconRight && !loading && <Icon name={iconRight} size={size === "sm" ? 14 : 16} />}
+    </button>
+  );
 }

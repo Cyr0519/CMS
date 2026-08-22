@@ -2,9 +2,30 @@
 
 import type { InputHTMLAttributes, ReactNode } from "react";
 
-type Props = InputHTMLAttributes<HTMLInputElement> & { label?: string; error?: string; iconLeft?: ReactNode; iconRight?: ReactNode };
+import Field, { controlClasses } from "@/components/ui/Field";
+import Icon, { type IconName } from "@/components/ui/Icon";
 
-export default function Input({ label, error, iconLeft, iconRight, className = "", id, ...props }: Props) {
+type Props = InputHTMLAttributes<HTMLInputElement> & {
+  label?: string;
+  hint?: string;
+  error?: string;
+  icon?: IconName;
+  /** Conservé pour compatibilité : accepte un nœud libre à gauche du champ. */
+  iconLeft?: ReactNode;
+  iconRight?: ReactNode;
+  wrapperClassName?: string;
+};
+
+export default function Input({ label, hint, error, icon, iconLeft, iconRight, className = "", wrapperClassName = "", id, ...props }: Props) {
   const inputId = id || props.name;
-  return <label className="block text-sm font-medium text-primary" htmlFor={inputId}>{label && <span className="mb-1.5 block">{label}</span>}<span className="relative block">{iconLeft && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{iconLeft}</span>}<input id={inputId} className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-primary placeholder:text-gray-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 ${error ? "border-danger" : "border-gray-200"} ${iconLeft ? "pl-10" : ""} ${iconRight ? "pr-10" : ""} ${className}`} {...props} />{iconRight && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{iconRight}</span>}</span>{error && <span className="mt-1 block text-xs text-danger">{error}</span>}</label>;
+  const left = icon ? <Icon name={icon} size={16} /> : iconLeft;
+  return (
+    <Field id={inputId} label={label} hint={hint} error={error} required={props.required} className={wrapperClassName}>
+      <span className="relative block">
+        {left && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted">{left}</span>}
+        <input id={inputId} className={controlClasses(error, `h-10 px-3 ${left ? "pl-9" : ""} ${iconRight ? "pr-9" : ""} ${className}`)} {...props} />
+        {iconRight && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted">{iconRight}</span>}
+      </span>
+    </Field>
+  );
 }
